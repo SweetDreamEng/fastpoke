@@ -1,0 +1,103 @@
+@use "sass:list";
+@use "sass:map";
+@use "is-type" as *;
+@use "units" as *;
+
+// nest
+
+// returns a map of ALL key/value pairs (inc. nested) under a key
+
+@function nest-gather($nest, $keys: null) {
+    $nest: $nest;
+    $returnMap: null;
+    @if $keys {
+      $nest: nest-get($nest, $keys);
+    }
+    $depth: depth($nest);
+    $mapKeys: map.keys($nest);
+    @for $i from 1 through $depth {
+      @each $key, $value in $nest {
+        $index: index($mapKeys, $key);
+        @if not is-map($value) {
+          $value: (
+            $key: $value
+          );
+          @if $index == 1 {
+            $returnMap: $value;
+          } @else {
+            $returnMap: map.merge($returnMap, $value);
+          }
+        } @else if is-map($value) {
+          @if $index == 1 and $i == 1 {
+            $returnMap: $value;
+          } @else {
+            $returnMap: map.merge($returnMap, $value);
+          }
+          $returnMap: map.remove($returnMap, $key);
+        }
+      }
+      @if $i == 1 {
+        $nest: $returnMap;
+      } @else {
+        $nest: map.merge($nest, $returnMap);
+      }
+    }
+    @return $nest;
+  }
+
+
+// return the value of a specified key from within a nested map
+
+@function nest-get($nest, $keys) {
+    @each $key in $keys {
+      $nest: map.get($nest, $key);
+    }
+    @return $nest;
+  }
+
+  
+// check to see if a key is present within a nested map
+
+@function nest-has-key($nest, $items) {
+    @each $key in $items {
+      @if not map.has-key($nest, $key) {
+        @return false;
+      } @else {
+        $nest: map.get($nest, $key);
+      }
+    }
+    @return true;
+  }
+
+
+// replace the contents of a key within a nested map
+
+// note: if the key is not present it will be paired
+// with the new value and added to the nested map
+
+@function nest-send($nest, $keys, $newValue) {
+    $maps: ($nest);
+    $output: null;
+    @if list.length($keys) == 1 {
+      @return map.merge(
+        $nest,
+        (
+          $keys: $newValue
+        )
+      );
+    }
+    @for $i from 1 through (length($keys) - 1) {
+      $cKey: list.nth($keys, $i);
+      $cMap: list.nth($maps, -1);
+      $cGet: map.get($cMap, $cKey);
+      $maps: list.append($maps, $cGet);
+    }
+    @for $i from list.length($maps) through 1 {
+      $cMap: list.nth($maps, $i);
+      $cKey: list.nth($keys, $i);
+      $cVal: if($i == list.length($maps), $newValue, $output);
+      $output: map.merge($cMap, ());
+    }
+    @return $output;
+  }
+  

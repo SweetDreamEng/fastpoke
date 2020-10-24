@@ -1,0 +1,134 @@
+@use "sass:map";
+@use "sass:math";
+@use "sass:string";
+@use "has-item" as *;
+@use "is-type" as *;
+
+$default_units: px !default;
+$rem_base: 16 !default;
+
+// depth
+
+// depth(map) => 3
+// depth(list) => 3
+
+// note: maps can contain lists and other maps
+// note: lists can contain maps and other lists
+
+@function depth($object) {
+    $count: 1;
+    @if is-map($object) {
+      @each $key, $value in $object {
+        @if is-map($value) {
+          $count: math.max(depth($value) + 1, $count);
+        }
+      }
+    } @else if is-list($object) {
+      @each $value in $object {
+        @if is-map($value) {
+          $count: math.max(depth($value) + 1, $count);
+        }
+      }
+    }
+    @return $count;
+  }
+
+
+  // strip
+
+@function strip($number) {
+  @if is-number($number) {
+    $output: $number / ($number * 0 + 1);
+    @return $output;
+  } @else {
+    @warn 'Unknown strip() value: #{$number}';
+  }
+} // (200px) => 200
+
+
+// power
+
+@function power($number, $power: null) {
+  $runner: null;
+  @if (is-number($number)) and (is-number($power)) {
+    $number: strip($number);
+    $power: strip($power);
+    $output: 1 !default;
+    @if $power >= 0 {
+      @for $var from 1 through $power {
+        $output: $output * $number;
+      }
+    } @else {
+      @for $var from $power to 0 {
+        $output: $output / $number;
+      }
+    }
+    @return $output;
+  } @else {
+    @if not is-number($number) {
+      @warn 'Unknown power() number: #{$number}';
+    }
+    @if not is-number($power) {
+      @warn 'Unknown power() power: #{$power}';
+    }
+  }
+} // (2, 3) => 8
+
+
+// its
+
+@function its($input, $outUnits: $default_units) {
+  $inUnits: null;
+  $modifier: null;
+  $base: strip($rem_base);
+  $type: 1em, 1rem, 1ex, 1ch, 1%, 1vw, 1vh, 1vmin, 1vmax, 1px, 1cm, 1mm, 1in,
+    1pt, 1pc, 1dp;
+  $con: (
+    px: 96,
+    pt: 72,
+    pc: 6,
+    mm: 25.4,
+    cm: 2.54,
+    in: 1,
+    em: $base,
+    rem: $base
+  );
+  $canCon: map.keys($con);
+  @each $item in $type {
+    $unit: math.unit($item);
+    @if $unit == $outUnits {
+      $modifier: $item;
+    }
+  }
+  @if not $modifier {
+    @warn "The units '#{$outUnits}' are not recognized by the its() function, defaulted to 'px'.";
+    $modifier: 1px;
+  }
+  @if is-number($input) {
+    @if not math.is-unitless($input) {
+      $inUnits: math.unit($input);
+      $inUnits: string.unquote($inUnits);
+      $input: strip($input);
+    } @else {
+      $inUnits: px;
+    }
+    @if has-item($canCon, $inUnits) {
+      $calc: map.get($con, $inUnits);
+      $input: $input * (96 / $calc);
+    }
+    @if has-item($canCon, $outUnits) {
+      $calc: map.get($con, $outUnits);
+      $input: $input / (96 / $calc);
+    }
+    $input: $input * $modifier;
+  } @else {
+    @warn "No number value found for its() input: '#{$input}'.";
+    @return null;
+  }
+  @return $input;
+}
+
+// (96) => 96px if $default_units set to 'px'
+// (96) => 16rem if $default_units set to 'rem'
+// (96, em) => 16em
+// (96vw, rem) => 96rem because 'vw' can't convert to 'rem'

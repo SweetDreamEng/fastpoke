@@ -1,0 +1,26 @@
+// has-item
+
+// boolean
+// check if a list contains an item
+
+@function has-item($list, $item) {
+    @each $listee in $list {
+      @if $listee == $item {
+        @return true;
+      }
+    }
+    @return false;
+  }
+
+
+// boolean
+// check if a list contains multiple items
+
+@function has-items($list, $items) {
+    @each $item in $items {
+      @if not has-item($list, $item) {
+        @return false;
+      }
+    }
+    @return true;
+  }
