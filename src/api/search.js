@@ -12,9 +12,11 @@ class SearchApi {
       keyword: params?.keyword,
       "place-id": params?.placeId,
     });
-
-    const res = await axios.get(this._baseUrl + "recruiters/?" + queries);
-
+    const res = '';
+    if (!queries)
+      res = await axios.get(this._baseUrl + "recruiters/");
+    else 
+      res = await axios.get(this._baseUrl + "recruiters/?" + queries);
     return res;
   };
 }
