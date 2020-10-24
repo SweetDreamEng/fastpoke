@@ -3,6 +3,7 @@ import { connectRouter } from "connected-react-router";
 
 import userReducer from "./userReducer";
 import profileEmployerReducer from "./profileEmployerReducer";
+import searchReducer from './searchReducer';
 import { LOGOUT } from "../actions/types";
 
 const createRootReducer = (history) => (state, action) => {
@@ -14,6 +15,7 @@ const createRootReducer = (history) => (state, action) => {
     router: connectRouter(history),
     user: userReducer,
     profileEmployer: profileEmployerReducer,
+    searchRecruiter: searchReducer, 
   });
 
   return rootReducer(state, action);

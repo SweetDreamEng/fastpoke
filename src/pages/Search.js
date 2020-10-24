@@ -13,6 +13,13 @@ const homeApi = new HomeApi();
 const Search = ({history}) => {
 
     const [specialties, GetSpecialties] = useState('');
+    const [filters, SetFilters] = useState({
+      industries: [],
+      functions: [],
+      level: [],
+      keyword: '',
+      "place-id": '',
+    });
 
     const GetSpecialtyData = async () => {
         const data = await homeApi.getSpecialties();
@@ -31,7 +38,7 @@ const Search = ({history}) => {
           <section className="search results" id="search-results-01">
             <br/><br/>
             <div className="container">
-              <SideBar data={specialties}/>
+              <SideBar data={specialties} />
               <Results />
             </div>
           </section>
