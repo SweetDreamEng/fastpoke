@@ -2,7 +2,7 @@ import axios from "axios";
 import queryString from "query-string";
 
 class SearchApi {
-  _baseUrl = "https://fastpoke.com/search/";
+  _baseUrl = "https://fastpoke.com/";
 
   searchRecruiters = async (params) => {
     const queries = queryString.stringify({
@@ -14,9 +14,9 @@ class SearchApi {
     });
     const res = '';
     if (!queries)
-      res = await axios.get(this._baseUrl + "recruiters/");
+      res = await axios.get(this._baseUrl + "recruiters/search/");
     else 
-      res = await axios.get(this._baseUrl + "recruiters/?" + queries);
+      res = await axios.get(this._baseUrl + "recruiters/search/?" + queries);
     return res;
   };
 }
